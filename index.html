@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="https://www.aureos.com/wp-content/uploads/2025/02/AUREOS-FAVicon_512px-x-512px-150x150.png" sizes="32x32">
+  <title>Aureos Tool Cards</title>
+  <!-- Import Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap" rel="stylesheet">
+  <style>
+    /* Page Styling */
+    * {
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+:root {
+    --primary-color: #4caf50; /* Green for completed steps */
+    --secondary-color: #007bff; /* Blue for buttons */
+    --background-color: #f9f9f9;
+    --text-color: #333;
+    --border-radius: 10px;
+    --box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    --transition: 0.3s ease;
+}
+
+html {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    background: rgb(255,255,255);
+    background: linear-gradient(158deg, rgba(255,255,255,1) 0%, rgba(59,219,135,1) 37%, rgba(111,188,247,1) 65%, rgba(4,113,190,1) 100%);
+}
+
+    header {
+      background: #2d3436;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+    }
+    /* Cards Container */
+    #cards-container {
+      display: flex;
+      /* margin-top: 100px; */
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 20px;
+      justify-content: center;
+    }
+    /* Card Styling */
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+      width: 300px;
+      cursor: pointer;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+    .card-content {
+      padding: 20px;
+    }
+    .card-title {
+      font-size: 1.5em;
+      margin-bottom: 10px;
+      color: #2d3436;
+    }
+    .card-description {
+      font-size: 1em;
+      line-height: 1.4;
+      color: #636e72;
+    }
+    .card-version {
+      font-size: 0.9em;
+      color: #fff;
+      background-color: #0984e3;
+      padding: 4px 8px;
+      border-radius: 12px;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+    .logo {
+    position: fixed;        /* Fixes the position relative to the viewport */
+    bottom: 20px;           /* Distance from the bottom edge */
+    right: 20px;            /* Distance from the right edge */
+    width: 150px;           /* Set the size of the logo */
+    height: auto;           /* Maintain aspect ratio */
+    z-index: 1000;          /* Ensure it appears above other elements */
+    opacity: 0.8;           /* Slight transparency for a modern feel */
+    transition: opacity 0.3s ease; /* Smooth hover effect */
+}
+
+.logo:hover {
+    opacity: 1;             /* Full opacity on hover */
+    transform: scale(1.05);  /* Slight zoom-in effect on hover */
+    transition: var(--transition);
+}
+  </style>
+</head>
+<body>
+  <!-- Container for generated cards -->
+  <div id="cards-container"></div>
+  <a href="https://www.aureos.com/" target="_blank" rel="noopener noreferrer">
+    <img src="https://www.aureos.com/wp-content/themes/keltbray/assets/img/logo/AUREOS_logo_wh.svg"
+        class="logo logo--white" alt="Aureos Logo">
+</a>
+  <script>
+    // Replace with your actual API endpoint
+    const apiURL = 'https://prod-39.uksouth.logic.azure.com:443/workflows/5138e81c16704be39280610c3eaf12d1/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=USJmtlF0KWJy4nQ_Gz90Qk2YYChilyTFKEiOMhfOPNM';
+
+    // Fetch the array from the HTTP request
+    fetch(apiURL)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(tools => {
+        const container = document.getElementById('cards-container');
+        // Iterate over the tools array
+        tools.forEach(tool => {
+          // Create card element
+          const card = document.createElement('div');
+          card.classList.add('card');
+          
+          // Create card content container
+          const cardContent = document.createElement('div');
+          cardContent.classList.add('card-content');
+          
+          // Create title element
+          const title = document.createElement('div');
+          title.classList.add('card-title');
+          title.textContent = tool.name;  // Assuming each tool has a 'name' property
+          
+          // Create description element
+          const description = document.createElement('div');
+          description.classList.add('card-description');
+          description.textContent = tool.description;  // Assuming a 'description' property
+                     // Create version element if available
+          if (tool.version) {
+            const version = document.createElement('div');
+            version.classList.add('card-version');
+            version.textContent = 'Version: ' + tool.version;
+            cardContent.appendChild(version);
+          }
+          // Append title and description to the card content container
+          cardContent.appendChild(title);
+          cardContent.appendChild(description);
+          
+          // Append card content container to the card
+          card.appendChild(cardContent);
+          
+          // Add click event listener to redirect to the tool's URL
+          card.addEventListener('click', () => {
+            window.open(tool.url, '_blank')  // Ensure each tool object has a 'url' property
+          });
+          
+          // Append the card to the container
+          container.appendChild(card);
+        });
+      })
+      .catch(error => {
+        console.error('Error fetching tools:', error);
+      });
+  </script>
+</body>
+</html>
