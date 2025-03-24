@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="https://www.aureos.com/wp-content/uploads/2025/02/AUREOS-FAVicon_512px-x-512px-150x150.png" sizes="32x32">
-  <title>Aureos Tool Cards</title>
+  <title>Aureos ACC Tools</title>
   <!-- Import Google Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap" rel="stylesheet">
   <style>
@@ -32,12 +32,35 @@ html {
     background: rgb(255,255,255);
     background: linear-gradient(158deg, rgba(255,255,255,1) 0%, rgba(59,219,135,1) 37%, rgba(111,188,247,1) 65%, rgba(4,113,190,1) 100%);
 }
+body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
 
+      color: #333;
+    }
     header {
       background: #2d3436;
       color: #fff;
       padding: 20px;
       text-align: center;
+    }
+    h1 {
+      position: absolute;
+      top: 0;
+      left: 0;
+      margin: 0;
+      padding: 10px; /* Optional padding */
+    }
+    /* Category Section */
+    .category-section {
+      margin: 20px;
+      padding: 10px;
+    }
+    .category-section h2 {
+      margin-bottom: 10px;
+      border-bottom: 2px solid #2d3436;
+      padding-bottom: 5px;
     }
     /* Cards Container */
     #cards-container {
@@ -103,6 +126,7 @@ html {
   </style>
 </head>
 <body>
+  <h1>Aureos ACC Tools</h1>
   <!-- Container for generated cards -->
   <div id="cards-container"></div>
   <a href="https://www.aureos.com/" target="_blank" rel="noopener noreferrer">
