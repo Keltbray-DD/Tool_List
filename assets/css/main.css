@@ -73,7 +73,7 @@ h1 {
     gap: 20px;
     padding: 20px;
     justify-content: center;
-    max-width: 1600px;
+    max-width: 1400px;
     width: 90%;
     margin: auto;
 }
@@ -113,7 +113,7 @@ h1 {
 .card-version {
     font-size: 0.9em;
     color: #fff;
-    background-color: #0984e3;
+    background-color: #45d88e;
     padding: 4px 8px;
     border-radius: 12px;
     display: inline-block;
@@ -178,3 +178,14 @@ input[type="text"] {
     font-family: Arial, sans-serif;
     font-size: 12px;
 }
+
+.alpha {
+    color: white;
+    background-color: #ffc107; /* red */
+  }
+  
+  .beta {
+    color: white;
+    background-color: #07a4ff; /* yellow/orange */
+  }
+  

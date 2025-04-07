@@ -7,41 +7,51 @@ document.addEventListener("DOMContentLoaded", async function () {
     let allTools = [];
   
     function renderCards(tools) {
-      container.innerHTML = ''; // Clear existing cards
-  
-      tools.forEach(tool => {
-        const card = document.createElement('div');
-        card.classList.add('card');
-  
-        const cardContent = document.createElement('div');
-        cardContent.classList.add('card-content');
-  
-        const title = document.createElement('div');
-        title.classList.add('card-title');
-        title.textContent = tool.name;
-  
-        const description = document.createElement('div');
-        description.classList.add('card-description');
-        description.textContent = tool.description;
-  
-        if (tool.version) {
-          const version = document.createElement('div');
-          version.classList.add('card-version');
-          version.textContent = 'Version: ' + tool.version;
-          cardContent.appendChild(version);
-        }
-  
-        cardContent.appendChild(title);
-        cardContent.appendChild(description);
-        card.appendChild(cardContent);
-  
-        card.addEventListener('click', () => {
-          window.open(tool.url, '_blank');
+        container.innerHTML = ''; // Clear existing cards
+      
+        tools.forEach(tool => {
+          const card = document.createElement('div');
+          card.classList.add('card');
+      
+          const cardContent = document.createElement('div');
+          cardContent.classList.add('card-content');
+      
+          const title = document.createElement('div');
+          title.classList.add('card-title');
+          title.textContent = tool.name;
+      
+          const description = document.createElement('div');
+          description.classList.add('card-description');
+          description.textContent = tool.description;
+      
+          if (tool.version) {
+            const version = document.createElement('div');
+            version.classList.add('card-version');
+            version.textContent = 'Version: ' + tool.version;
+      
+            // Add ALPHA or BETA class if matched
+            const versionUpper = tool.version.toUpperCase();
+            if (versionUpper.includes("ALPHA")) {
+              version.classList.add('alpha');
+            } else if (versionUpper.includes("BETA")) {
+              version.classList.add('beta');
+            }
+      
+            cardContent.appendChild(version);
+          }
+      
+          cardContent.appendChild(title);
+          cardContent.appendChild(description);
+          card.appendChild(cardContent);
+      
+          card.addEventListener('click', () => {
+            window.open(tool.url, '_blank');
+          });
+      
+          container.appendChild(card);
         });
-  
-        container.appendChild(card);
-      });
-    }
+      }
+      
   
     fetch(apiURL)
       .then(response => {
