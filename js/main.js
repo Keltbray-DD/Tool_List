@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   
     function renderCards(tools) {
         container.innerHTML = ''; // Clear existing cards
-      
+        tools.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
         tools.forEach(tool => {
           const card = document.createElement('div');
           card.classList.add('card');
@@ -33,9 +33,15 @@ document.addEventListener("DOMContentLoaded", async function () {
             const versionUpper = tool.version.toUpperCase();
             if (versionUpper.includes("ALPHA")) {
               version.classList.add('alpha');
+            
+              // Disable ALPHA tools
+              card.classList.add('disabled');
+              card.style.pointerEvents = 'none'; // disables clicks
+              card.style.opacity = '0.6';        // visually show it's disabled
             } else if (versionUpper.includes("BETA")) {
               version.classList.add('beta');
             }
+            
       
             cardContent.appendChild(version);
           }
