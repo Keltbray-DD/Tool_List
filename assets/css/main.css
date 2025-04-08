@@ -120,6 +120,38 @@ h1 {
     margin-bottom: 10px;
 }
 
+.card-category {
+    font-size: 0.9em;
+    padding: 4px 8px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    float: right;
+}
+
+.acc {
+    color: #000000;
+    background-color: #ffffff;
+    border-color: #000000;
+    border-style: solid;
+    border-width: 1px;
+}
+
+.helix {
+    color: #ffffff;
+    background-color: #000000;
+    border-color: #000000;
+    border-style: solid;
+    border-width: 1px;
+}
+
+.prosapien {
+    color: #000000;
+    background-color: #ffffff;
+    border-color: #ee4b0a;
+    border-style: solid;
+    border-width: 1px;
+}
+
 .top-bar {
     background-color: #333;
     color: white;

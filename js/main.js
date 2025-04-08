@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     let allTools = [];
   
     function renderCards(tools) {
+      // console.log(tools)
         container.innerHTML = ''; // Clear existing cards
         tools.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
         tools.forEach(tool => {
@@ -45,9 +46,29 @@ document.addEventListener("DOMContentLoaded", async function () {
       
             cardContent.appendChild(version);
           }
-      
+
+          if (tool.category) {
+            const category = document.createElement('div');
+            category.classList.add('card-category');
+            switch (tool.category) {
+              case 'ACC':
+                category.classList.add('acc');
+                break;
+              case 'Helix':
+                category.classList.add('helix');
+                break;
+              case 'ProSapien':
+                category.classList.add('prosapien');
+                break;
+              default:
+                break;
+            }
+            category.textContent = tool.category;
+            cardContent.appendChild(category);
+          }
           cardContent.appendChild(title);
           cardContent.appendChild(description);
+          
           card.appendChild(cardContent);
       
           card.addEventListener('click', () => {
@@ -79,7 +100,8 @@ document.addEventListener("DOMContentLoaded", async function () {
       const query = searchBar.value.toLowerCase();
       const filteredTools = allTools.filter(tool =>
         tool.name.toLowerCase().includes(query) ||
-        (tool.description && tool.description.toLowerCase().includes(query))
+        (tool.description && tool.description.toLowerCase().includes(query)) ||
+        tool.category.toLowerCase().includes(query)
       );
       renderCards(filteredTools);
     });
