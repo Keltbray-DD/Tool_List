@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     
         const type = document.getElementById('type').value;
         const description = document.getElementById('description').value;
-        const userEmail = document.getElementById('userEmail').value;
+        const userEmail = document.getElementById('userFeedbackEmail').value;
         const screenshotInput = document.getElementById('screenshot');
     
         let screenshotBase64 = null;
