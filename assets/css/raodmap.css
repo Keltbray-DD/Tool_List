@@ -1,0 +1,21 @@
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+td{
+    text-align: left;
+}
+
+.dataTables_wrapper .dataTables_filter{
+    margin-bottom: 10px;
+}
+
+#chart_div {
+    width: 100%;
+    max-width: 100%;
+}

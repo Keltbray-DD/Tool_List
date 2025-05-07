@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="https://www.aureos.com/wp-content/uploads/2025/02/AUREOS-FAVicon_512px-x-512px-150x150.png" sizes="32x32">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/raodmap.css">
+  <script src="js/variables.js"></script>
+  <script src="js/default.js"></script>
+  <script src="js/roadmap_main.js"></script>
+  <title>Aureos Digital Tools</title>
+  <!-- Import Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap" rel="stylesheet">
+  
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+  <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  
+  <style>
+
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <img src="https://www.aureos.com/wp-content/themes/keltbray/assets/img/logo/AUREOS_logo_wh.svg" 
+    class="logo logo--white" 
+    alt="Aureos Logo">
+    <div class="title"><h2>Aureos Digital Tools - Roadmap</h2></div>
+    <div class="profile-container" id="profileMenu">
+
+    </div>
+  </div>
+  <div class="container">
+    <h2>Tool Development Roadmap</h2>
+    <div id="chart_div"></div>
+  </div>
+  <div class="container">
+    <table id="roadmapTable">
+      <thead>
+          <tr>
+              <th>Tool</th>
+              <th>Planned Version</th>
+              <th>Update Description</th>
+              <th>Est. Start Date</th>
+              <th>Est. Duration</th>
+              <th>Completed</th>
+          </tr>
+      </thead>
+      <tbody></tbody>
+  </table>
+  </div>
+  <!-- Container for generated cards -->
+   <div id="feedback">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <a href="#" id="feedbackBtn"><i class="fa-solid fa-bug"></i></a>
+  
+      <!-- The Modal -->
+      <div id="feedbackModal" class="modal">
+        <div class="feedback-content">
+            <span class="close" id="closeModal">&times;</span>
+            <h2>Tool Feedback</h2>
+            <form id="feedbackForm">
+                <label for="type" class="buglabel">Type:</label>
+                <select id="type" name="type" required>
+                    <option value="Bug">Bug</option>
+                    <option value="Feature">Feature Request</option>
+                    <option value="Feedback">General Feedback</option>
+                </select>
+            
+                <label for="description" class="buglabel">What went wrong?</label>
+                <textarea id="description" name="description" rows="5" required></textarea>
+  
+                <label for="email">Please enter email so we can contact you if needed</label>
+                <input type="email" name="email" id="userEmail" placeholder="Your email..." required>
+  
+                <label for="screenshot">Attach a screenshot (optional):</label>
+                <input type="file" id="screenshot" name="screenshot" accept="image/*">
+  
+                <button type="submit" class="feedbackBtn">Submit</button>
+            </form>
+            
+        </div>
+    </div>
+   </div>
+
+<div id="appInfo"></div>
+  <script>
+    
+  </script>
+</body>
+</html>

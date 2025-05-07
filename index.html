@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="assets/css/main.css">
   <script src="js/variables.js"></script>
   <script src="js/main.js"></script>
+  <script src="js/default.js"></script>
   <title>Aureos Digital Tools</title>
   <!-- Import Google Fonts -->
   <link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap" rel="stylesheet">
@@ -21,7 +22,7 @@
     alt="Aureos Logo">
     <div class="title"><h2>Aureos Digital Tools</h2></div>
     <div class="profile-container" id="profileMenu">
-
+      <button type="button" id="RoadmapBtn" onclick="window.location.href='roadmap.html'">Tool Roadmap</button>
     </div>
   </div>
   <div>
@@ -37,6 +38,38 @@
     <img src="https://www.aureos.com/wp-content/themes/keltbray/assets/img/logo/AUREOS_logo_wh.svg"
         class="logo logo--white" alt="Aureos Logo">
 </a> -->
+<div id="feedback">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <a href="#" id="feedbackBtn"><i class="fa-solid fa-bug"></i></a>
+
+    <!-- The Modal -->
+    <div id="feedbackModal" class="modal">
+      <div class="feedback-content">
+          <span class="close" id="closeModal">&times;</span>
+          <h2>Tool Feedback</h2>
+          <form id="feedbackForm">
+              <label for="type" class="buglabel">Type:</label>
+              <select id="type" name="type" required>
+                  <option value="Bug">Bug</option>
+                  <option value="Feature">Feature Request</option>
+                  <option value="Feedback">General Feedback</option>
+              </select>
+          
+              <label for="description" class="buglabel">What went wrong?</label>
+              <textarea id="description" name="description" rows="5" required></textarea>
+
+              <label for="email">Please enter email so we can contact you if needed</label>
+              <input type="email" name="email" id="userEmail" placeholder="Your email..." required>
+
+              <label for="screenshot">Attach a screenshot (optional):</label>
+              <input type="file" id="screenshot" name="screenshot" accept="image/*">
+
+              <button type="submit" class="feedbackBtn">Submit</button>
+          </form>
+          
+      </div>
+  </div>
+ </div>
 <div id="appInfo"></div>
   <script>
     

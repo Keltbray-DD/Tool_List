@@ -1,2 +1,2 @@
 const appName = "Aureos Digital Tools";
-const appVersion = "v1.1.4";
+const appVersion = "v1.2.0";
