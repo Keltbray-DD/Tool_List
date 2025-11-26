@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", async function () {
     document.getElementById("appInfo").textContent = `${appName} ${appVersion}`;
-    const apiURL = 'https://prod-39.uksouth.logic.azure.com:443/workflows/5138e81c16704be39280610c3eaf12d1/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=USJmtlF0KWJy4nQ_Gz90Qk2YYChilyTFKEiOMhfOPNM';
+    const apiURL = 'https://default917b4d06d2e9475983a3e7369ed74e.8f.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/5138e81c16704be39280610c3eaf12d1/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=zzZz947nB80XSKoy-Td1WjvvBDtXiDaFftUt4-fnbYc';
   
     const container = document.getElementById('cards-container');
     const searchBar = document.getElementById('search-bar');

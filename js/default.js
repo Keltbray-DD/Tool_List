@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         };
     
         try {
-            const response = await fetch('https://prod-07.uksouth.logic.azure.com:443/workflows/9c87a5536bdb4693a934559d0ce9d483/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=B29hnHMorKKwLVyZquwnJLNth1wSAnL2VAhPd779XzY', {
+            const response = await fetch('https://default917b4d06d2e9475983a3e7369ed74e.8f.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/9c87a5536bdb4693a934559d0ce9d483/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=47zaCSAjFCwW5znjpZKgifJK8YVhJQdsICqIJM91MQ4', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
