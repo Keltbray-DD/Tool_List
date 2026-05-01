@@ -30,7 +30,27 @@
       <input type="text" id="search-bar" placeholder="Search tools..." />
 
     </div>
-    <div id="cards-container"></div>
+
+    <div class="main-layout">
+      <!-- Welcome packs & guides -->
+      <aside id="guides-strip">
+        <button type="button" class="guides-toggle is-open" id="guidesToggle" aria-expanded="true" aria-controls="guidesRow">
+          <span class="guides-label">Welcome packs &amp; guides</span>
+          <span class="guides-chevron" aria-hidden="true">▾</span>
+        </button>
+        <div class="guides-row" id="guidesRow">
+          <a href="guides/forma_welcome.html" class="guide-tile" target="_blank" rel="noopener">
+            <img class="guide-tile-icon" src="https://emsfs.autodesk.com/2023/BADGES/SPCMKR_2023_BADGE_36X36.png" alt="Autodesk Forma">
+            <div class="guide-tile-text">
+              <div class="guide-tile-title">Welcome to Autodesk Forma</div>
+              <div class="guide-tile-desc">Get started: training, login, project access</div>
+            </div>
+          </a>
+        </div>
+      </aside>
+
+      <div id="cards-container"></div>
+    </div>
   </div>
   <!-- Container for generated cards -->
 

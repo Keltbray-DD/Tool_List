@@ -65,17 +65,30 @@ h1 {
     padding-bottom: 5px;
 }
 
+/* Main two-column layout: guides sidebar + tool cards */
+.main-layout {
+    display: flex;
+    gap: 20px;
+    max-width: 1200px;
+    width: 90%;
+    margin: 0 auto 20px auto;
+    align-items: flex-start;
+}
+
 /* Cards Container */
 #cards-container {
-    display: flex;
-    /* margin-top: 100px; */
-    flex-wrap: wrap;
+    flex: 1;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 20px;
-    padding: 20px;
-    justify-content: center;
-    max-width: 1400px;
-    width: 90%;
-    margin: auto;
+    padding: 0 0 20px 0;
+}
+
+@media (max-width: 720px) {
+    .main-layout {
+        flex-direction: column;
+    }
 }
 
 /* Card Styling */
@@ -85,7 +98,6 @@ h1 {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     transition: transform 0.3s, box-shadow 0.3s;
-    width: 300px;
     cursor: pointer;
 }
 
@@ -228,6 +240,114 @@ input[type="text"]:focus {
 .disabled {
     cursor: not-allowed;
     filter: grayscale(50%);
+}
+
+/* Welcome packs & guides — left sidebar */
+#guides-strip {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    flex: 0 0 260px;
+    padding: 10px 10px;
+    align-self: flex-start;
+}
+
+@media (max-width: 720px) {
+    #guides-strip {
+        flex-basis: auto;
+        width: 100%;
+    }
+}
+
+.guides-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 10px;
+    cursor: pointer;
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.25em;
+    font-weight: 500;
+    color: #2d3436;
+    transition: background-color 0.2s ease;
+}
+
+.guides-toggle:hover {
+    background-color: #f4f6f8;
+}
+
+.guides-label {
+    flex: 1;
+    text-align: left;
+}
+
+.guides-chevron {
+    display: inline-block;
+    font-size: 14px;
+    color: #2d3436;
+    transition: transform 0.2s ease;
+}
+
+.guides-toggle.is-open .guides-chevron {
+    transform: rotate(180deg);
+}
+
+.guides-row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 6px 6px 6px;
+}
+
+.guide-tile {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    padding: 14px 16px;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.guide-tile:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.guide-tile-icon {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    display: block;
+}
+
+.guide-tile-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.guide-tile-title {
+    font-size: 1.1em;
+    font-weight: 500;
+    color: #2d3436;
+    margin-bottom: 4px;
+}
+
+.guide-tile-desc {
+    font-size: 0.9em;
+    line-height: 1.4;
+    color: #636e72;
 }
 
 #RoadmapBtn{

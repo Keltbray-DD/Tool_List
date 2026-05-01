@@ -1,5 +1,18 @@
 document.addEventListener("DOMContentLoaded", async function () {
     document.getElementById("appInfo").textContent = `${appName} ${appVersion}`;
+
+    // Welcome packs & guides — expandable strip
+    const guidesToggle = document.getElementById('guidesToggle');
+    const guidesRow = document.getElementById('guidesRow');
+    if (guidesToggle && guidesRow) {
+      guidesToggle.addEventListener('click', () => {
+        const expanded = guidesToggle.getAttribute('aria-expanded') === 'true';
+        guidesToggle.setAttribute('aria-expanded', String(!expanded));
+        guidesRow.hidden = expanded;
+        guidesToggle.classList.toggle('is-open', !expanded);
+      });
+    }
+
     const apiURL = 'https://default917b4d06d2e9475983a3e7369ed74e.8f.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/5138e81c16704be39280610c3eaf12d1/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=zzZz947nB80XSKoy-Td1WjvvBDtXiDaFftUt4-fnbYc';
   
     const container = document.getElementById('cards-container');
