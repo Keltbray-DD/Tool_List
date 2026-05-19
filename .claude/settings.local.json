@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ollama --version)",
+      "Bash(nvidia-smi --query-gpu=name,driver_version,memory.total --format=csv)",
+      "Bash(./.venv/Scripts/python.exe -c \"import ast; ast.parse\\(open\\('daemon.py', encoding='utf-8'\\).read\\(\\)\\); print\\('OK'\\)\")",
+      "Bash(./.venv/Scripts/python.exe -c ' *)",
+      "Bash(./.venv/Scripts/python.exe -c \"import ast; [ast.parse\\(open\\(f, encoding='utf-8'\\).read\\(\\)\\) for f in \\('daemon.py','scribe.py','app.py'\\)]; print\\('OK'\\)\")",
+      "Bash(tasklist)",
+      "Bash(netstat -ano)",
+      "Bash(wmic process *)",
+      "PowerShell(Get-CimInstance Win32_Process -Filter \"Name like 'python%'\")",
+      "Bash(timeout 180 ./.venv/Scripts/python.exe scribe.py --audio \"recordings/meeting_2026-05-01_15-37-47.wav\" --no-summary)",
+      "Bash(./.venv/Scripts/python.exe scribe.py --audio \"recordings/meeting_2026-05-01_15-37-47.wav\" --no-summary)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(/d/Devs/Scribe/.venv/Scripts/python.exe scribe.py --audio \"recordings/meeting_2026-05-01_15-37-47.wav\" --no-summary)",
+      "Bash(\"/d/Devs/Scribe/.venv/Scripts/python.exe\" --version)",
+      "Bash(\"/d/Devs/Scribe/.venv/Scripts/python.exe\" \"/d/Devs/Scribe/scribe.py\" --audio \"/d/Devs/Scribe/recordings/meeting_2026-05-01_15-37-47.wav\" --no-summary)",
+      "Bash(\"/d/Devs/Scribe/.venv/Scripts/python.exe\" \"/d/Devs/Scribe/scribe.py\" --help)",
+      "Read(//tmp/**)",
+      "Bash(/d/Devs/Scribe/.venv/Scripts/python.exe -c ' *)"
+    ]
+  }
+}
