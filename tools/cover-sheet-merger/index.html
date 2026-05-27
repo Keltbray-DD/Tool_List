@@ -48,6 +48,9 @@
     .browse-row:hover { background: #eef4fb; }
     .browse-row--folder { color: #2d3436; }
     .browse-row--file { color: #1f1f1f; }
+    .browse-row--file.is-selected { background: #eef7f1; }
+    .browse-check { flex-shrink: 0; font-size: 16px; color: #0471be; width: 18px; text-align: center; }
+    .browse-row--file.is-selected .browse-check { color: #1f7a3a; }
     .browse-icon { flex-shrink: 0; }
     .browse-tick { margin-left: auto; color: #1f7a3a; font-size: 12px; font-weight: 600; }
     .browse-empty { padding: 16px 12px; color: #636e72; font-size: 13px; }
@@ -72,7 +75,7 @@
     }
     .confirm-overlay[hidden] { display: none; }
     .confirm-box {
-      background: #fff; border-radius: 10px; padding: 24px; max-width: 460px; width: 90%;
+      background: #fff; border-radius: 10px; padding: 24px; max-width: 560px; width: 90%;
       box-shadow: 0 12px 40px rgba(0,0,0,0.3);
     }
     .confirm-box h3 { margin: 0 0 10px; color: #2d3436; font-weight: 500; }
@@ -85,20 +88,23 @@
     .merge-hint { margin-top: 10px; font-size: 13px; min-height: 18px; color: #8a6d3b; }
     .merge-hint.ready { color: #1f7a3a; }
 
-    /* Progress bar shown inside the confirm modal during merge + upload */
-    .cs-progress { height: 14px; background: #e9e9e4; border-radius: 8px; overflow: hidden; margin: 8px 0 12px; }
+    /* Per-file progress bars in the batch modal */
+    .cs-progress { height: 10px; background: #e9e9e4; border-radius: 6px; overflow: hidden; margin: 0; }
     .cs-progress__bar {
-      height: 100%; width: 0; border-radius: 8px;
+      height: 100%; width: 0; border-radius: 6px;
       background: linear-gradient(90deg, #3bdb87, #0471be);
-      transition: width .35s ease;
+      transition: width .3s ease;
     }
-    .cs-progress__label { font-size: 13px; color: #444; }
-    .cs-done-tick {
-      width: 48px; height: 48px; margin: 0 auto 12px; border-radius: 50%;
-      background: #1f7a3a; color: #fff; font-size: 26px; line-height: 48px; text-align: center;
-    }
-    #confirmDone { text-align: center; }
-    #confirmDone .confirm-actions { margin-top: 18px; text-align: left; }
+    .batch-list { max-height: 50vh; overflow-y: auto; margin: 6px 0 4px; }
+    .batch-row { padding: 10px 0; border-bottom: 1px solid #f0f0eb; }
+    .batch-row:last-child { border-bottom: none; }
+    .batch-row__name { font-size: 13px; font-weight: 500; color: #2d3436; word-break: break-all; margin-bottom: 6px; }
+    .batch-row__status { font-size: 12px; color: #636e72; margin-top: 5px; }
+    .batch-row__status.ok { color: #1f7a3a; }
+    .batch-row__status.err { color: #b3261e; }
+    .batch-link { color: #0471be; font-weight: 500; text-decoration: none; }
+    .batch-link:hover { text-decoration: underline; }
+    #batchFooter { margin-top: 16px; }
 
     .merge-status { margin-top: 16px; padding: 12px 14px; border-radius: 8px; font-size: 14px; display: none; }
     .merge-status.show { display: block; }
@@ -159,7 +165,7 @@
   <div class="merge-wrap">
     <div class="merge-block">
       <h3>Cover Sheet Merger</h3>
-      <p class="hint">Add your project's cover sheet to a document in Forma. Pick a cover file — a <strong>Word (.docx)</strong> cover is prepended to a Word document, an <strong>Excel (.xlsx)</strong> cover's COVER_SHEET tab is copied into a workbook as the first tab, a <strong>PDF (.pdf)</strong> cover's first page is added to the front of a PDF, and a <strong>PowerPoint (.pptx)</strong> cover's first slide is added as the first slide. The result is saved straight back to Forma as a new version.</p>
+      <p class="hint">Add your project's cover sheet to a document in Forma. Pick a cover file — a <strong>Word (.docx)</strong> cover is prepended to a Word document, an <strong>Excel (.xlsx)</strong> cover's COVER_SHEET tab is copied into a workbook as the first tab, a <strong>PDF (.pdf)</strong> cover's first page is added to the front of a PDF, and a <strong>PowerPoint (.pptx)</strong> cover's first slide is added as the first slide. Tick <strong>one or more</strong> target files and each is saved straight back to Forma as a new version.</p>
     </div>
 
     <!-- FORMA -->
@@ -188,7 +194,7 @@
       </div>
 
       <div class="merge-block">
-        <span class="field-label" id="targetLabel">Target file — pick a cover file above first:</span>
+        <span class="field-label" id="targetLabel">Target files — pick a cover file above first:</span>
         <div class="browse">
           <div class="browse-breadcrumb" id="folderBreadcrumb"></div>
           <div class="browse-list" id="folderList"></div>
@@ -228,17 +234,11 @@
           <button class="reset-link" id="confirmNo">Cancel</button>
         </div>
       </div>
-      <div id="confirmProgress" hidden>
-        <h3>Saving to Forma…</h3>
-        <div class="cs-progress"><div class="cs-progress__bar" id="csBar"></div></div>
-        <div class="cs-progress__label" id="csLabel">Starting…</div>
-      </div>
-      <div id="confirmDone" hidden>
-        <div class="cs-done-tick">✓</div>
-        <h3>File uploaded successfully</h3>
-        <p id="doneMsg"></p>
-        <div class="confirm-actions">
-          <button class="submittButton" id="doneAnother">Merge another</button>
+      <div id="confirmBatch" hidden>
+        <h3 id="batchTitle">Saving to Forma…</h3>
+        <div class="batch-list" id="batchList"></div>
+        <div class="confirm-actions" id="batchFooter" hidden>
+          <button class="submittButton" id="doneAnother">Merge more</button>
           <button class="reset-link" id="doneClose">Close</button>
         </div>
       </div>

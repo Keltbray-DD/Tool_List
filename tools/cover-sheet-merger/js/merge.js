@@ -20,12 +20,10 @@
   let coverDesktopFile = null;// cover picked from disk (fallback only)
   let projectFilesId = null;  // browse root
   let browseStack = [];       // [{id,name}] breadcrumb ([0] = Project Files)
-  let mainFormaFile = null;   // {id,name,versionId,folderId}
-  let workflowType = null;    // 'word' | 'excel' — derived from the chosen cover
+  let selectedTargets = [];   // [{id,name,versionId,folderId}] — current folder only
+  let selectionFolderId = null; // folder the current selection belongs to
+  let workflowType = null;    // 'word' | 'excel' | 'pdf' | 'pptx' — from the cover
 
-  // Output
-  let mergedBlob = null;
-  let mergedName = null;
   let busy = false;
 
   // --- Element refs ---------------------------------------------------------
@@ -66,9 +64,16 @@
     el.innerHTML = '';
   }
 
-  function resetOutput() {
-    mergedBlob = null;
-    mergedName = null;
+  function clearSelection() {
+    selectedTargets = [];
+    selectionFolderId = null;
+    updateSelectedCount();
+  }
+  function updateSelectedCount() {
+    const el = $('mainSelected');
+    if (!el) return;
+    const n = selectedTargets.length;
+    el.textContent = n === 0 ? '' : (n === 1 ? '1 file selected' : n + ' files selected');
   }
 
   function setBusy(b) {
@@ -80,15 +85,13 @@
   async function selectProject(id, name) {
     projectID = id;
     projectName = name || '';
-    mainFormaFile = null;
     coverFiles = [];
     coverFolderId = null;
     coverDesktopFile = null;
     workflowType = null;
     projectFilesId = null;
     browseStack = [];
-    resetOutput();
-    $('mainSelected').textContent = '';
+    clearSelection();
     updateMergeBtn();
 
     if (!projectID) {
@@ -240,12 +243,8 @@
     const newType = typeForExt(ext);
 
     // Changing type invalidates any previously chosen target.
-    if (newType !== workflowType) {
-      mainFormaFile = null;
-      $('mainSelected').textContent = '';
-    }
+    if (newType !== workflowType) clearSelection();
     workflowType = newType;
-    resetOutput();
     setTargetLabel();
 
     if (!workflowType) {
@@ -260,10 +259,10 @@
     const label = $('targetLabel');
     if (!label) return;
     if (!workflowType) {
-      label.textContent = 'Target file — pick a cover file above first:';
+      label.textContent = 'Target files — pick a cover file above first:';
     } else {
-      label.textContent = 'Target ' + typeNoun(workflowType) + ' (' + extForType(workflowType) +
-        ') — browse to it and click to select:';
+      label.textContent = 'Target ' + typeNoun(workflowType) + 's (' + extForType(workflowType) +
+        ') — tick one or more in the current folder:';
     }
   }
 
@@ -274,6 +273,8 @@
     $('folderList').innerHTML = '<div class="browse-loading"><span class="mini-spinner"></span>Loading…</div>';
     const token = await getAccessToken("data:read");
     const current = browseStack[browseStack.length - 1];
+    // Selection is scoped to one folder — moving to a different folder clears it.
+    if (selectionFolderId !== current.id) { selectedTargets = []; selectionFolderId = current.id; updateSelectedCount(); updateMergeBtn(); }
     const all = await listFolder(token, projectID, current.id);
     const folders = all.folders;
     const files = all.files.filter(f => extOf(f.name) === wantExt);
@@ -315,21 +316,32 @@
       row.innerHTML = '<span class="browse-icon">📁</span>' + escapeHtml(f.name);
       row.addEventListener('click', () => {
         browseStack.push({ id: f.id, name: f.name });
-        renderBrowser();
+        renderBrowser(); // new folder → selection clears via selectionFolderId check
       });
       list.appendChild(row);
     });
     files.forEach(f => {
+      const isSel = selectedTargets.some(t => t.id === f.id);
       const row = document.createElement('div');
-      row.className = 'browse-row browse-row--file';
-      const selected = mainFormaFile && mainFormaFile.id === f.id;
-      row.innerHTML = '<span class="browse-icon">📄</span>' + escapeHtml(f.name) +
-        (selected ? '<span class="browse-tick">✓ selected</span>' : '');
+      row.className = 'browse-row browse-row--file' + (isSel ? ' is-selected' : '');
+      const check = document.createElement('span');
+      check.className = 'browse-check';
+      check.textContent = isSel ? '☑' : '☐';
+      row.appendChild(check);
+      const icon = document.createElement('span');
+      icon.className = 'browse-icon';
+      icon.textContent = '📄';
+      row.appendChild(icon);
+      row.appendChild(document.createTextNode(f.name));
       row.addEventListener('click', () => {
-        mainFormaFile = { ...f, folderId: current.id };
-        $('mainSelected').textContent = 'Target file: ' + f.name;
-        resetOutput();
-        renderBrowser();
+        // Toggle selection in place — no re-fetch.
+        const i = selectedTargets.findIndex(t => t.id === f.id);
+        const nowSel = i < 0;
+        if (nowSel) selectedTargets.push({ ...f, folderId: current.id });
+        else selectedTargets.splice(i, 1);
+        row.classList.toggle('is-selected', nowSel);
+        check.textContent = nowSel ? '☑' : '☐';
+        updateSelectedCount();
         updateMergeBtn();
       });
       list.appendChild(row);
@@ -343,7 +355,7 @@
     if (!projectID) missing.push('a project');
     const haveCover = coverFolderId ? ($('coverSelect').value !== '') : !!coverDesktopFile;
     if (!haveCover) missing.push('a cover file');
-    if (!mainFormaFile) missing.push('a target file');
+    if (selectedTargets.length === 0) missing.push('at least one target file');
     return missing;
   }
 
@@ -378,117 +390,156 @@
     }
   }
 
-  // --- Gather blobs & merge -------------------------------------------------
-  // Downloads (or reads) the cover + main, runs the merge, and leaves the
-  // result in mergedBlob / mergedName. Reports progress via onProgress(pct,
-  // label) across 0→45% (upload, if any, takes it the rest of the way).
-  async function mergeToBlob(onProgress) {
-    const prog = onProgress || function () {};
-
-    let coverBlob;
+  // --- Cover + merge --------------------------------------------------------
+  // Download (or read) the cover file once; reused for every target.
+  async function getCoverBlob() {
     if (coverFolderId) {
       const idx = parseInt($('coverSelect').value, 10);
-      const cf = coverFiles[idx];
-      prog(5, 'Downloading cover file from Forma…');
-      coverBlob = await downloadFileBlob(cf);
-    } else {
-      coverBlob = coverDesktopFile;
+      return await downloadFileBlob(coverFiles[idx]);
     }
-
-    prog(20, 'Downloading target ' + typeNoun(workflowType) + ' from Forma…');
-    const mainBlob = await downloadFileBlob(mainFormaFile);
-    const ext = extForType(workflowType);
-    const outBase = mainFormaFile.name.replace(new RegExp(ext.replace('.', '\\.') + '$', 'i'), '');
-
-    if (workflowType === 'excel') {
-      prog(38, 'Copying the COVER_SHEET tab…');
-      mergedBlob = await mergeXlsx(coverBlob, mainBlob);
-    } else if (workflowType === 'pdf') {
-      prog(38, 'Adding the cover page…');
-      mergedBlob = await mergePdf(coverBlob, mainBlob);
-    } else if (workflowType === 'pptx') {
-      prog(38, 'Adding the cover slide…');
-      mergedBlob = await mergePptx(coverBlob, mainBlob);
-    } else {
-      prog(38, 'Merging documents…');
-      mergedBlob = await mergeDocx(coverBlob, mainBlob);
-    }
-    mergedName = outBase + '_with_cover' + ext;
-    prog(45, 'Merge complete.');
+    return coverDesktopFile;
   }
 
-  // One-click path: merge, then upload straight to Forma as a new version.
-  // Driven from the confirm modal, which stays open showing the progress bar.
-  async function runMergeAndUpload() {
+  // Merge the cover into one target file; returns the merged Blob.
+  // onProgress(pct,label) spans 0→45 (upload takes 45→100).
+  async function mergeCoverInto(coverBlob, targetFile, onProgress) {
+    const prog = onProgress || function () {};
+    prog(8, 'Downloading from Forma…');
+    const targetBlob = await downloadFileBlob(targetFile);
+    if (workflowType === 'excel') { prog(34, 'Copying COVER_SHEET tab…'); return await mergeXlsx(coverBlob, targetBlob); }
+    if (workflowType === 'pdf')   { prog(34, 'Adding cover page…');       return await mergePdf(coverBlob, targetBlob); }
+    if (workflowType === 'pptx')  { prog(34, 'Adding cover slide…');      return await mergePptx(coverBlob, targetBlob); }
+    prog(34, 'Merging…'); return await mergeDocx(coverBlob, targetBlob);
+  }
+
+  // --- Batch run: one cover → every selected target -------------------------
+  async function runBatch() {
     setBusy(true);
-    resetOutput();
-    showModalProgress();
-    const savedName = mainFormaFile.name;
+    const targets = selectedTargets.slice();
+    showModalBatch(targets);
+    let ok = 0, failed = 0;
+    let coverBlob;
     try {
-      await mergeToBlob(setModalProgress);
-      await uploadAsNewVersion(mergedBlob, mainFormaFile, setModalProgress);
-      setModalProgress(100, 'Saved to Forma!');
-      await new Promise(r => setTimeout(r, 650)); // let the full bar register
-      $('doneMsg').innerHTML = 'Saved as a new version of “' + escapeHtml(savedName) +
-        '”. Open it in Forma to confirm.';
-      showModalDone();
+      coverBlob = await getCoverBlob();
     } catch (err) {
       console.error(err);
-      closeConfirm();
-      setStatus('Couldn’t complete: ' + err.message, 'error');
-    } finally {
+      targets.forEach((t, i) => setRowError(i, 'Could not load the cover file.'));
+      finishBatch(0, targets.length);
       setBusy(false);
-      updateMergeBtn();
+      return;
     }
+    for (let i = 0; i < targets.length; i++) {
+      const tf = targets[i];
+      const prog = (pct, label) => setRowProgress(i, pct, label);
+      try {
+        const blob = await mergeCoverInto(coverBlob, tf, prog);
+        await uploadAsNewVersion(blob, tf, prog);
+        setRowDone(i, tf);
+        ok++;
+      } catch (err) {
+        console.error('Failed on ' + tf.name + ':', err);
+        setRowError(i, err && err.message ? err.message : String(err));
+        failed++;
+      }
+    }
+    finishBatch(ok, failed);
+    setBusy(false);
+    updateMergeBtn();
   }
 
-  // --- Confirm modal --------------------------------------------------------
-  function setModalProgress(pct, label) {
-    const clamped = Math.max(0, Math.min(100, pct));
-    $('csBar').style.width = clamped + '%';
-    $('csLabel').textContent = label || '';
-  }
-  function showModalProgress() {
-    $('confirmQuestion').hidden = true;
-    $('confirmDone').hidden = true;
-    $('confirmProgress').hidden = false;
-    setModalProgress(0, 'Starting…');
-  }
-  function showModalDone() {
-    $('confirmQuestion').hidden = true;
-    $('confirmProgress').hidden = true;
-    $('confirmDone').hidden = false;
-  }
-  // "Merge another": keep the project + cover loaded, clear the chosen main
-  // document and the merged result so the user can pick the next file.
-  function doAnother() {
-    closeConfirm();
-    mainFormaFile = null;
-    $('mainSelected').textContent = '';
-    resetOutput();
-    clearStatus();
-    updateMergeBtn();
-    if (projectFilesId) renderBrowser();
-  }
+  // --- Confirm + batch modal ------------------------------------------------
   function openConfirm() {
     if (!ensureReady()) return;
-    // Reset modal to the question state (in case a previous run left it on progress/done).
     $('confirmQuestion').hidden = false;
-    $('confirmProgress').hidden = true;
-    $('confirmDone').hidden = true;
-    const mainName = mainFormaFile ? mainFormaFile.name : '';
-    let action, noun;
-    if (workflowType === 'excel') { action = 'copy the COVER_SHEET tab into'; noun = 'workbook'; }
-    else if (workflowType === 'pdf') { action = 'add the cover page to the front of'; noun = 'PDF'; }
-    else if (workflowType === 'pptx') { action = 'add the cover slide to the front of'; noun = 'presentation'; }
-    else { action = 'merge the cover sheet onto'; noun = 'document'; }
+    $('confirmBatch').hidden = true;
+    const n = selectedTargets.length;
+    let verb;
+    if (workflowType === 'excel') verb = 'copy the COVER_SHEET tab into';
+    else if (workflowType === 'pdf') verb = 'add the cover page to the front of';
+    else if (workflowType === 'pptx') verb = 'add the cover slide to the front of';
+    else verb = 'add the cover sheet to';
+    const what = n === 1 ? 'this ' + typeNoun(workflowType) : n + ' ' + typeNoun(workflowType) + 's';
     $('confirmMsg').innerHTML =
-      'This will ' + action + ' <strong>' + escapeHtml(mainName) + '</strong> and ' +
-      'upload the result <strong>directly to Forma</strong> as a new version of that ' + noun + ' — ' +
-      'in one step. The original stays in Forma’s version history.';
+      'This will ' + verb + ' <strong>' + what + '</strong> and upload the result ' +
+      '<strong>directly to Forma</strong> as a new version of each — in one step. ' +
+      'The originals stay in Forma’s version history.';
     $('confirmOverlay').hidden = false;
   }
   function closeConfirm() { $('confirmOverlay').hidden = true; }
+
+  // Build one progress row per target and switch the modal to batch view.
+  function showModalBatch(targets) {
+    $('confirmQuestion').hidden = true;
+    $('confirmBatch').hidden = false;
+    $('batchFooter').hidden = true;
+    $('batchTitle').textContent = 'Saving to Forma…';
+    const list = $('batchList');
+    list.innerHTML = '';
+    targets.forEach((t, i) => {
+      const row = document.createElement('div');
+      row.className = 'batch-row';
+      row.id = 'batchRow' + i;
+      row.innerHTML =
+        '<div class="batch-row__name"><span class="batch-row__file"></span></div>' +
+        '<div class="cs-progress"><div class="cs-progress__bar"></div></div>' +
+        '<div class="batch-row__status">Waiting…</div>';
+      row.querySelector('.batch-row__file').textContent = t.name;
+      list.appendChild(row);
+    });
+  }
+  function setRowProgress(i, pct, label) {
+    const row = $('batchRow' + i);
+    if (!row) return;
+    row.querySelector('.cs-progress__bar').style.width = Math.max(0, Math.min(100, pct)) + '%';
+    const st = row.querySelector('.batch-row__status');
+    st.className = 'batch-row__status';
+    st.textContent = label || '';
+  }
+  function setRowDone(i, tf) {
+    const row = $('batchRow' + i);
+    if (!row) return;
+    row.querySelector('.cs-progress__bar').style.width = '100%';
+    const nameEl = row.querySelector('.batch-row__name');
+    const url = formaFileUrl(tf.id);
+    if (url) {
+      nameEl.innerHTML = '<a class="batch-link" href="' + url + '" target="_blank" rel="noopener">' +
+        escapeHtml(tf.name) + '</a>';
+    }
+    const st = row.querySelector('.batch-row__status');
+    st.className = 'batch-row__status ok';
+    st.textContent = '✓ Saved new version' + (url ? ' — click the name to open in Forma' : '');
+  }
+  function setRowError(i, msg) {
+    const row = $('batchRow' + i);
+    if (!row) return;
+    const st = row.querySelector('.batch-row__status');
+    st.className = 'batch-row__status err';
+    st.textContent = '✗ ' + msg;
+  }
+  function finishBatch(ok, failed) {
+    $('batchTitle').textContent = failed === 0
+      ? (ok === 1 ? 'Saved to Forma' : 'All ' + ok + ' saved to Forma')
+      : (ok + ' saved, ' + failed + ' failed');
+    $('batchFooter').hidden = false;
+  }
+
+  // "Merge more": keep project + cover, clear the target selection for a fresh batch.
+  function doAnother() {
+    closeConfirm();
+    clearSelection();
+    clearStatus();
+    updateMergeBtn();
+    if (projectFilesId && workflowType) renderBrowser();
+  }
+
+  // Build a link that opens the document in Forma/ACC. {project}=project GUID,
+  // {item}=item lineage URN. Returns null if no template is configured.
+  function formaFileUrl(itemUrn) {
+    if (typeof FORMA_FILE_URL !== 'string' || !FORMA_FILE_URL || !projectID || !itemUrn) return null;
+    return FORMA_FILE_URL
+      .replace('{project}', encodeURIComponent(projectID))
+      .replace('{item}', encodeURIComponent(itemUrn));
+  }
 
   // --- Desktop dropzones -----------------------------------------------------
   function wireDropzone(zoneId, inputId, onPick) {
@@ -508,7 +559,7 @@
   function validCover(file) {
     if (!file) return false;
     if (!SUPPORTED_EXTS.includes(extOf(file.name))) {
-      setStatus('Please choose a .docx or .xlsx cover file.', 'error');
+      setStatus('Please choose a .docx, .xlsx, .pdf or .pptx cover file.', 'error');
       return false;
     }
     return true;
@@ -531,9 +582,9 @@
 
     $('mergeUploadBtn').addEventListener('click', openConfirm);
     $('confirmNo').addEventListener('click', () => { if (!busy) closeConfirm(); });
-    $('confirmYes').addEventListener('click', runMergeAndUpload);
-    $('doneAnother').addEventListener('click', doAnother);
-    $('doneClose').addEventListener('click', closeConfirm);
+    $('confirmYes').addEventListener('click', runBatch);
+    $('doneAnother').addEventListener('click', () => { if (!busy) doAnother(); });
+    $('doneClose').addEventListener('click', () => { if (!busy) closeConfirm(); });
     $('confirmOverlay').addEventListener('click', (e) => {
       if (e.target === $('confirmOverlay') && !busy) closeConfirm();
     });

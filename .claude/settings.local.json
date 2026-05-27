@@ -61,7 +61,9 @@
       "Bash(node _genoffice.js xlsx)",
       "Bash(node _genoffice.js docx)",
       "Bash(curl -s http://localhost:8765/index.html)",
-      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:8765__TRACKED_VAR__)"
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:8765__TRACKED_VAR__)",
+      "Bash(curl -s http://localhost:8765/tools/cover-sheet-merger/js/variables.js)",
+      "Bash(curl -s http://localhost:8765/tools/cover-sheet-merger/js/merge.js)"
     ]
   }
 }

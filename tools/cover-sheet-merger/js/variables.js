@@ -10,6 +10,13 @@ const appVersion = "v2.0.0";
 const SUPPORTED_EXTS = [".docx", ".xlsx", ".pdf", ".pptx"];
 const COVER_TAB_NAME = "COVER_SHEET"; // Excel: tab copied from the cover workbook
 
+// Deep-link template used to open a merged document in Forma/ACC from the
+// success list. {project} = project GUID, {item} = item lineage URN.
+// NOTE: best-guess ACC (EMEA) pattern — VERIFY against a real Forma file URL
+// and adjust here if the link doesn't land on the document. Set to "" to hide
+// the links entirely.
+const FORMA_FILE_URL = "https://acc.autodesk.eu/docs/files/projects/{project}?entityId={item}";
+
 // --- Autodesk APS config (shared with the TIDP uploader) --------------------
 const hubID = "b.24d2d632-e01b-4ca0-b988-385be827cb04";
 const account_id = "24d2d632-e01b-4ca0-b988-385be827cb04";
