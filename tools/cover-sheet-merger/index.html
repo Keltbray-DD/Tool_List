@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forma Cover Sheet Merger | Aureos</title>
+  <link rel="icon" href="https://www.aureos.com/wp-content/uploads/2025/02/AUREOS-FAVicon_512px-x-512px-150x150.png" sizes="32x32">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/acc-main.css">
+  <link rel="stylesheet" href="assets/css/userBox.css">
+  <style>
+    .merge-wrap { width: 90%; max-width: 760px; margin: 20px auto 60px; }
+    .merge-block {
+      background: #FAFAFA; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      padding: 18px 20px; margin-top: 16px;
+    }
+    .merge-block h3 { margin: 0 0 6px; font-weight: 500; color: #2d3436; }
+    .merge-block .hint { color: #636e72; font-size: 13px; margin: 0 0 12px; }
+    .field-label { font-size: 14px; font-weight: 500; color: #2d3436; margin: 4px 0 6px; display: block; }
+
+    .dropzone {
+      border: 2px dashed #ccc; border-radius: 10px; padding: 22px 16px; text-align: center;
+      cursor: pointer; transition: all .15s ease; background: #fff; display: block;
+    }
+    .dropzone:hover, .dropzone.dragover { border-color: #0471be; background: #eef4fb; }
+    .dropzone.has-file { border-style: solid; border-color: #1f7a3a; background: #f0f9f3; }
+    .dropzone .dz-label { font-weight: 500; color: #2d3436; }
+    .dropzone .dz-hint { color: #636e72; font-size: 13px; display: block; margin-top: 2px; }
+    .dropzone .dz-name { margin-top: 8px; font-size: 13px; color: #1f7a3a; font-weight: 500; word-break: break-all; }
+    .dropzone input[type="file"] { display: none; }
+
+    .browse {
+      border: 1px solid #e2e2dd; border-radius: 8px; background: #fff; overflow: hidden;
+    }
+    .browse-breadcrumb {
+      padding: 8px 12px; font-size: 13px; background: #f4f6f8; border-bottom: 1px solid #e2e2dd;
+      word-break: break-word;
+    }
+    .browse-breadcrumb .crumb { color: #0471be; text-decoration: none; }
+    .browse-breadcrumb .crumb:hover { text-decoration: underline; }
+    .browse-breadcrumb .crumb--current { color: #2d3436; font-weight: 500; }
+    .browse-list { max-height: 300px; overflow-y: auto; }
+    .browse-row {
+      padding: 9px 12px; display: flex; align-items: center; gap: 8px; cursor: pointer;
+      border-bottom: 1px solid #f0f0eb; font-size: 14px;
+    }
+    .browse-row:last-child { border-bottom: none; }
+    .browse-row:hover { background: #eef4fb; }
+    .browse-row--folder { color: #2d3436; }
+    .browse-row--file { color: #1f1f1f; }
+    .browse-icon { flex-shrink: 0; }
+    .browse-tick { margin-left: auto; color: #1f7a3a; font-size: 12px; font-weight: 600; }
+    .browse-empty { padding: 16px 12px; color: #636e72; font-size: 13px; }
+    .browse-loading { padding: 16px 12px; color: #636e72; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+    .mini-spinner {
+      display: inline-block; width: 14px; height: 14px; flex-shrink: 0;
+      border: 2px solid rgba(4,113,190,0.25); border-top-color: #0471be;
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    .main-selected { margin-top: 8px; font-size: 13px; color: #1f7a3a; font-weight: 500; }
+
+    .merge-actions { display: flex; gap: 12px; margin-top: 18px; align-items: stretch; }
+    .merge-actions .submittButton { margin: 0; width: auto; flex: 1; }
+    .reset-link {
+      background: transparent; color: #636e72; border: 1px solid #ccc; border-radius: 5px;
+      padding: 0 16px; cursor: pointer; font-size: 14px;
+    }
+    .reset-link:hover { background: #f0f0eb; color: #2d3436; }
+    .confirm-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+      display: flex; align-items: center; justify-content: center; z-index: 2000;
+    }
+    .confirm-overlay[hidden] { display: none; }
+    .confirm-box {
+      background: #fff; border-radius: 10px; padding: 24px; max-width: 460px; width: 90%;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    }
+    .confirm-box h3 { margin: 0 0 10px; color: #2d3436; font-weight: 500; }
+    .confirm-box p { color: #444; font-size: 14px; line-height: 1.55; margin: 0 0 20px; }
+    .confirm-actions { display: flex; gap: 12px; align-items: stretch; }
+    .confirm-actions .submittButton { margin: 0; width: auto; flex: 1; }
+    .confirm-actions .reset-link { flex: 0 0 auto; padding: 10px 18px; }
+
+    /* Live requirements hint under the action buttons */
+    .merge-hint { margin-top: 10px; font-size: 13px; min-height: 18px; color: #8a6d3b; }
+    .merge-hint.ready { color: #1f7a3a; }
+
+    /* Progress bar shown inside the confirm modal during merge + upload */
+    .cs-progress { height: 14px; background: #e9e9e4; border-radius: 8px; overflow: hidden; margin: 8px 0 12px; }
+    .cs-progress__bar {
+      height: 100%; width: 0; border-radius: 8px;
+      background: linear-gradient(90deg, #3bdb87, #0471be);
+      transition: width .35s ease;
+    }
+    .cs-progress__label { font-size: 13px; color: #444; }
+    .cs-done-tick {
+      width: 48px; height: 48px; margin: 0 auto 12px; border-radius: 50%;
+      background: #1f7a3a; color: #fff; font-size: 26px; line-height: 48px; text-align: center;
+    }
+    #confirmDone { text-align: center; }
+    #confirmDone .confirm-actions { margin-top: 18px; text-align: left; }
+
+    .merge-status { margin-top: 16px; padding: 12px 14px; border-radius: 8px; font-size: 14px; display: none; }
+    .merge-status.show { display: block; }
+    .merge-status.info { background: #eef4fb; color: #0471be; }
+    .merge-status.success { background: #e8f5ed; color: #1f7a3a; }
+    .merge-status.error { background: #fbeae8; color: #b3261e; }
+    .download-link { color: #0471be; font-weight: 500; }
+
+    details.merge-help { margin-top: 16px; font-size: 14px; color: #636e72; }
+    details.merge-help summary { cursor: pointer; font-weight: 500; color: #2d3436; padding: 8px 0; }
+
+    .combo { position: relative; }
+    .combo-input:disabled { background: #f0f0eb; cursor: not-allowed; }
+    .combo-list {
+      position: absolute; left: 0; right: 20px; top: 100%; z-index: 50;
+      background: #fff; border: 1px solid #ccc; border-top: none;
+      border-radius: 0 0 6px 6px; max-height: 280px; overflow-y: auto;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    }
+    .combo-row { padding: 9px 12px; font-size: 14px; cursor: pointer; border-bottom: 1px solid #f0f0eb; }
+    .combo-row:last-child { border-bottom: none; }
+    .combo-row:hover, .combo-row.active { background: #eef4fb; }
+    .combo-empty { padding: 10px 12px; font-size: 13px; color: #636e72; }
+  </style>
+</head>
+<body>
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <img src="https://www.aureos.com/wp-content/themes/keltbray/assets/img/logo/AUREOS_logo_wh.svg"
+         class="logo logo--white" alt="Aureos Logo">
+    <div class="title"><h2>Forma Cover Sheet Merger</h2></div>
+    <div class="profile-container" id="profileMenu">
+      <img id="userPic" src="https://images.profile.autodesk.com/default/user_X58.png" alt="Profile" class="profile-pic" />
+      <div class="dropdown-menu" id="dropdown">
+        <div><strong>User:</strong> <p id="userName"></p></div>
+        <div><strong>Email:</strong> <p id="userEmail"></p></div>
+        <div class="logout" onclick="logout()">Logout</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING SCREEN -->
+  <div id="loadingScreen">
+    <div class="loading-panel">
+      <div class="loading-spinner-circle"></div>
+      <div class="loading-title">Loading Cover Sheet Merger…</div>
+      <ul class="loading-steps" id="loadingSteps">
+        <li class="step pending" data-step="auth">
+          <span class="step-icon"></span><span class="step-label">Authenticating with Autodesk</span>
+        </li>
+        <li class="step pending" data-step="projects">
+          <span class="step-icon"></span><span class="step-label">Loading projects</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="merge-wrap">
+    <div class="merge-block">
+      <h3>Cover Sheet Merger</h3>
+      <p class="hint">Add your project's cover sheet to a document in Forma. Pick a cover file — a <strong>Word (.docx)</strong> cover is prepended to a Word document, an <strong>Excel (.xlsx)</strong> cover's COVER_SHEET tab is copied into a workbook as the first tab, a <strong>PDF (.pdf)</strong> cover's first page is added to the front of a PDF, and a <strong>PowerPoint (.pptx)</strong> cover's first slide is added as the first slide. The result is saved straight back to Forma as a new version.</p>
+    </div>
+
+    <!-- FORMA -->
+    <div id="formaSection">
+      <div class="merge-block">
+        <span class="field-label">Project</span>
+        <div class="combo" id="projectCombo">
+          <input type="text" id="projectSearch" class="form-dropdown combo-input"
+                 placeholder="Search projects…" autocomplete="off" disabled>
+          <div class="combo-list" id="projectList" hidden></div>
+        </div>
+      </div>
+
+      <div class="merge-block">
+        <span class="field-label" id="coverSelectLabel">Cover file (.docx, .xlsx, .pdf or .pptx, from 0B.GENERAL/COVER_SHEETS):</span>
+        <select class="form-dropdown" id="coverSelect"><option value="">Select a project first…</option></select>
+        <!-- Desktop fallback when the project has no COVER_SHEETS folder -->
+        <div id="coverFallback" style="display:none;">
+          <label class="dropzone" id="coverFallbackZone" for="coverFallbackInput">
+            <span class="dz-label">Choose a cover file (.docx, .xlsx, .pdf or .pptx)</span>
+            <span class="dz-hint">Drag &amp; drop or click</span>
+            <div class="dz-name" id="coverFallbackName"></div>
+            <input type="file" id="coverFallbackInput" accept=".docx,.xlsx,.pdf,.pptx">
+          </label>
+        </div>
+      </div>
+
+      <div class="merge-block">
+        <span class="field-label" id="targetLabel">Target file — pick a cover file above first:</span>
+        <div class="browse">
+          <div class="browse-breadcrumb" id="folderBreadcrumb"></div>
+          <div class="browse-list" id="folderList"></div>
+        </div>
+        <div class="main-selected" id="mainSelected"></div>
+      </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="merge-actions">
+      <button class="submittButton" id="mergeUploadBtn">Merge &amp; save to Forma</button>
+      <button class="reset-link" id="resetBtn">Reset</button>
+    </div>
+
+    <div class="merge-hint" id="mergeHint"></div>
+
+    <div class="merge-status" id="status"></div>
+
+    <details class="merge-help">
+      <summary>How it works &amp; known limits</summary>
+      <p><strong>Word (.docx):</strong> a Next Page section break is inserted between the cover and the document, so each keeps its own margins, headers, footers, page numbering and orientation. The document stays as the base; the cover's content is prepended and its images copied in. Cover-only custom styles fall back to the document's styles of the same name; the cover's own headers/footers and any tracked changes, comments or macros are not carried over.</p>
+      <p><strong>Excel (.xlsx):</strong> the cover's COVER_SHEET tab is copied in as the first tab; the rest of the target workbook is left untouched. Cell formatting, merged cells, column widths and an embedded logo carry over. Charts, pivot tables or formulas referencing other tabs in the cover may not transfer. If the target already has a COVER_SHEET tab it is replaced.</p>
+      <p><strong>PDF (.pdf):</strong> the cover PDF's first page is inserted at the front of the target PDF; all the target's existing pages are preserved in order.</p>
+      <p><strong>PowerPoint (.pptx):</strong> the cover deck's first slide is added as the first slide of the target, carrying its own layout, master, theme and images so it keeps its design. The target's existing slides are preserved. Slide animations and embedded media beyond images may not transfer.</p>
+      <p>In all cases the result is uploaded as a <strong>new version of the target</strong> in Forma — the original is preserved in version history.</p>
+    </details>
+  </div>
+
+  <!-- CONFIRM UPLOAD MODAL -->
+  <div class="confirm-overlay" id="confirmOverlay" hidden>
+    <div class="confirm-box">
+      <div id="confirmQuestion">
+        <h3>Save directly to Forma?</h3>
+        <p id="confirmMsg"></p>
+        <div class="confirm-actions">
+          <button class="submittButton" id="confirmYes">Yes — merge &amp; upload</button>
+          <button class="reset-link" id="confirmNo">Cancel</button>
+        </div>
+      </div>
+      <div id="confirmProgress" hidden>
+        <h3>Saving to Forma…</h3>
+        <div class="cs-progress"><div class="cs-progress__bar" id="csBar"></div></div>
+        <div class="cs-progress__label" id="csLabel">Starting…</div>
+      </div>
+      <div id="confirmDone" hidden>
+        <div class="cs-done-tick">✓</div>
+        <h3>File uploaded successfully</h3>
+        <p id="doneMsg"></p>
+        <div class="confirm-actions">
+          <button class="submittButton" id="doneAnother">Merge another</button>
+          <button class="reset-link" id="doneClose">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="appInfo"></div>
+
+  <!-- Libraries vendored locally (one level up) -->
+  <script src="../lib/jszip.min.js"></script>
+  <script src="../lib/pdf-lib.min.js"></script>
+  <script src="js/variables.js"></script>
+  <script src="js/login.js"></script>
+  <script src="js/acc.js"></script>
+  <script src="js/upload.js"></script>
+  <script src="js/merge.js"></script>
+</body>
+</html>

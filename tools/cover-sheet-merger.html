@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cover Sheet Merger | Aureos</title>
+<link rel="icon" href="https://www.aureos.com/wp-content/uploads/2025/02/AUREOS-FAVicon_512px-x-512px-150x150.png" sizes="32x32">
+<link rel="stylesheet" href="../assets/css/main.css">
+<link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --merge-card: #ffffff;
+    --merge-ink: #2d3436;
+    --merge-muted: #636e72;
+    --merge-accent: #0471be;
+    --merge-accent-hover: #035a96;
+    --merge-border: #e2e2dd;
+    --merge-success: #1f7a3a;
+    --merge-error: #b3261e;
+    --merge-hover-tint: #eef4fb;
+  }
+  .merge-container {
+    max-width: 760px;
+    margin: 40px auto;
+    padding: 0 20px;
+  }
+  .merge-intro {
+    background: var(--merge-card);
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 24px 28px;
+    margin-bottom: 20px;
+  }
+  .merge-intro h1 {
+    position: static;
+    padding: 0;
+    margin: 0 0 8px;
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--merge-ink);
+  }
+  .merge-intro .subtitle {
+    color: var(--merge-muted);
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .merge-card {
+    background: var(--merge-card);
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .dropzone {
+    border: 2px dashed var(--merge-border);
+    border-radius: 10px;
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background: #fafaf8;
+    display: block;
+  }
+  .dropzone:hover,
+  .dropzone.dragover {
+    border-color: var(--merge-accent);
+    background: var(--merge-hover-tint);
+  }
+  .dropzone.has-file {
+    border-style: solid;
+    border-color: var(--merge-success);
+    background: #f0f9f3;
+  }
+  .dropzone-label {
+    font-weight: 500;
+    margin-bottom: 4px;
+    display: block;
+    color: var(--merge-ink);
+  }
+  .dropzone-hint {
+    color: var(--merge-muted);
+    font-size: 13px;
+  }
+  .dropzone-filename {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--merge-success);
+    font-weight: 500;
+    word-break: break-all;
+  }
+  .step-number {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    background: var(--merge-accent);
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 22px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  input[type="file"] { display: none; }
+  .merge-btn {
+    background: var(--merge-accent);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    flex: 1;
+    transition: background 0.15s ease;
+  }
+  .merge-btn:hover:not(:disabled) { background: var(--merge-accent-hover); }
+  .merge-btn:disabled {
+    background: #cbcbc6;
+    cursor: not-allowed;
+  }
+  .status {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    display: none;
+  }
+  .status.show { display: block; }
+  .status.info { background: #eef4fb; color: var(--merge-accent); }
+  .status.success { background: #e8f5ed; color: var(--merge-success); }
+  .status.error { background: #fbeae8; color: var(--merge-error); }
+  .download-link {
+    display: inline-block;
+    margin-top: 12px;
+    color: var(--merge-accent);
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .download-link:hover { text-decoration: underline; }
+  details {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--merge-muted);
+    background: var(--merge-card);
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 8px 24px 16px;
+  }
+  details summary {
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--merge-ink);
+    padding: 12px 0;
+  }
+  details ul { padding-left: 20px; }
+  details li { margin-bottom: 4px; }
+  .row { display: flex; gap: 12px; align-items: center; }
+  .reset-btn {
+    background: transparent;
+    color: var(--merge-muted);
+    border: 1px solid var(--merge-border);
+    width: auto;
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .reset-btn:hover:not(:disabled) {
+    background: #f0f0eb;
+    color: var(--merge-ink);
+  }
+</style>
+</head>
+<body>
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <img src="https://www.aureos.com/wp-content/themes/keltbray/assets/img/logo/AUREOS_logo_wh.svg"
+         class="logo logo--white"
+         alt="Aureos Logo">
+    <div class="title"><h2>Aureos Digital Tools - Cover Sheet Merger</h2></div>
+    <div class="profile-container" id="profileMenu">
+      <button type="button" id="RoadmapBtn" onclick="window.location.href='../index.html'">← Back to Tools</button>
+    </div>
+  </div>
+
+  <main class="merge-container">
+    <div class="merge-intro">
+      <h1>Cover Sheet Merger</h1>
+      <p class="subtitle">Prepend a cover sheet to any Word document. Files never leave your computer &mdash; everything runs in your browser.</p>
+    </div>
+
+    <div class="merge-card">
+      <label class="dropzone" id="coverZone" for="coverInput">
+        <span class="dropzone-label"><span class="step-number">1</span>Cover sheet (.docx)</span>
+        <span class="dropzone-hint">Drag &amp; drop or click to choose</span>
+        <div class="dropzone-filename" id="coverName"></div>
+        <input type="file" id="coverInput" accept=".docx">
+      </label>
+    </div>
+
+    <div class="merge-card">
+      <label class="dropzone" id="mainZone" for="mainInput">
+        <span class="dropzone-label"><span class="step-number">2</span>Main document (.docx)</span>
+        <span class="dropzone-hint">Drag &amp; drop or click to choose</span>
+        <div class="dropzone-filename" id="mainName"></div>
+        <input type="file" id="mainInput" accept=".docx">
+      </label>
+    </div>
+
+    <div class="row">
+      <button id="mergeBtn" class="merge-btn" disabled>Merge documents</button>
+      <button id="resetBtn" class="reset-btn">Reset</button>
+    </div>
+
+    <div class="status" id="status"></div>
+
+    <details>
+      <summary>How it works &amp; known limits</summary>
+      <p>The tool inserts a <strong>Next Page section break</strong> between the cover sheet and your document, so each section keeps its own margins, headers, footers, page numbering, and orientation. This is the same approach Word itself recommends.</p>
+      <p>The main document stays as the base (keeps all its styles, theme, headers/footers). The cover sheet's content is prepended; its embedded images are copied in and renamed if needed.</p>
+      <strong>What may not transfer perfectly:</strong>
+      <ul>
+        <li>Custom styles defined only in the cover sheet — they'll fall back to the main document's style of the same name (Word's built-in styles like Title, Heading 1 will look right).</li>
+        <li>The cover sheet's own headers/footers — by design, they don't carry over (the section break gives the cover its own blank header area).</li>
+        <li>Complex features: tracked changes, comments, footnotes that exist in the cover sheet, and macros may be dropped.</li>
+      </ul>
+      <p>For most cover sheets (title block, logo, project info, signature lines) the result is indistinguishable from a manual Word merge.</p>
+    </details>
+  </main>
+
+<div id="appInfo"></div>
+<script src="lib/jszip.min.js"></script>
+<script src="../js/variables.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var info = document.getElementById('appInfo');
+    if (info && typeof appName !== 'undefined') info.textContent = appName + ' ' + appVersion;
+  });
+</script>
+<script>
+(function () {
+  const coverInput = document.getElementById('coverInput');
+  const mainInput = document.getElementById('mainInput');
+  const coverZone = document.getElementById('coverZone');
+  const mainZone = document.getElementById('mainZone');
+  const coverName = document.getElementById('coverName');
+  const mainName = document.getElementById('mainName');
+  const mergeBtn = document.getElementById('mergeBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const statusEl = document.getElementById('status');
+
+  let coverFile = null;
+  let mainFile = null;
+
+  // --- UI wiring ------------------------------------------------------------
+
+  function setStatus(msg, kind) {
+    statusEl.className = 'status show ' + (kind || 'info');
+    statusEl.innerHTML = msg;
+  }
+  function clearStatus() {
+    statusEl.className = 'status';
+    statusEl.innerHTML = '';
+  }
+  function updateMergeBtn() {
+    mergeBtn.disabled = !(coverFile && mainFile);
+  }
+  function handleFile(file, which) {
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith('.docx')) {
+      setStatus('Please choose a .docx file. ' + file.name + ' is not supported.', 'error');
+      return;
+    }
+    if (which === 'cover') {
+      coverFile = file;
+      coverName.textContent = file.name;
+      coverZone.classList.add('has-file');
+    } else {
+      mainFile = file;
+      mainName.textContent = file.name;
+      mainZone.classList.add('has-file');
+    }
+    clearStatus();
+    updateMergeBtn();
+  }
+
+  coverInput.addEventListener('change', (e) => handleFile(e.target.files[0], 'cover'));
+  mainInput.addEventListener('change', (e) => handleFile(e.target.files[0], 'main'));
+
+  [['cover', coverZone], ['main', mainZone]].forEach(([which, zone]) => {
+    zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      zone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      handleFile(file, which);
+    });
+  });
+
+  resetBtn.addEventListener('click', () => {
+    coverFile = null; mainFile = null;
+    coverInput.value = ''; mainInput.value = '';
+    coverName.textContent = ''; mainName.textContent = '';
+    coverZone.classList.remove('has-file');
+    mainZone.classList.remove('has-file');
+    clearStatus();
+    updateMergeBtn();
+  });
+
+  mergeBtn.addEventListener('click', async () => {
+    mergeBtn.disabled = true;
+    setStatus('Merging documents...', 'info');
+    try {
+      const mergedBlob = await mergeDocx(coverFile, mainFile);
+      const url = URL.createObjectURL(mergedBlob);
+      const outName = mainFile.name.replace(/\.docx$/i, '') + '_with_cover.docx';
+      setStatus(
+        'Done! <a class="download-link" href="' + url + '" download="' + outName + '">' +
+        'Download ' + outName + '</a>',
+        'success'
+      );
+    } catch (err) {
+      console.error(err);
+      setStatus('Couldn’t merge these files: ' + err.message, 'error');
+    } finally {
+      mergeBtn.disabled = false;
+    }
+  });
+
+  // --- Docx merging ---------------------------------------------------------
+
+  /**
+   * Merge two .docx files: cover sheet content is prepended to main document,
+   * with a Next Page section break preserving each section's page setup.
+   * Returns a Blob.
+   */
+  async function mergeDocx(coverFile, mainFile) {
+    const coverZip = await JSZip.loadAsync(coverFile);
+    const mainZip = await JSZip.loadAsync(mainFile);
+
+    // Use main as base
+    const out = new JSZip();
+    const filePaths = Object.keys(mainZip.files);
+    for (const path of filePaths) {
+      if (mainZip.files[path].dir) continue;
+      const buf = await mainZip.files[path].async('uint8array');
+      out.file(path, buf);
+    }
+
+    // Load XML strings we need
+    const mainDocXml  = await mainZip.file('word/document.xml').async('string');
+    const coverDocXml = await coverZip.file('word/document.xml').async('string');
+
+    const mainRelsXml  = await readOrDefault(mainZip,  'word/_rels/document.xml.rels',
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>');
+    const coverRelsXml = await readOrDefault(coverZip, 'word/_rels/document.xml.rels',
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>');
+
+    // Find highest existing rId in main to avoid collisions
+    let maxRid = 0;
+    for (const m of mainRelsXml.matchAll(/Id="rId(\d+)"/g)) {
+      const n = parseInt(m[1], 10);
+      if (n > maxRid) maxRid = n;
+    }
+
+    // Skip certain cover relationships entirely (we don't bring over its headers/footers/numbering definitions
+    // because their referenced files would collide with main's numbering scheme).
+    const SKIP_REL_TYPES = new Set([
+      'http://schemas.openxmlformats.org/officeDocument/2006/relationships/header',
+      'http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer',
+      'http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering',
+      'http://schemas.openxmlformats.org/officeDocument/2006/relationships/footnotes',
+      'http://schemas.openxmlformats.org/officeDocument/2006/relationships/endnotes',
+      'http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles',
+      'http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme',
+      'http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings',
+      'http://schemas.openxmlformats.org/officeDocument/2006/relationships/webSettings',
+      'http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable',
+      'http://schemas.openxmlformats.org/officeDocument/2006/relationships/customXml',
+      'http://schemas.openxmlformats.org/officeDocument/2006/relationships/glossaryDocument'
+    ]);
+
+    // Parse cover relationships; remap rIds and rename media on collision
+    const ridMap = new Map(); // oldRid -> newRid (rels we kept)
+    const droppedRids = new Set(); // oldRid we dropped
+    const newRels = [];
+    const mediaRename = new Map(); // oldFilename -> newFilename
+
+    const relRegex = /<Relationship\s+([^>]+?)\/?>/g;
+    let relMatch;
+    while ((relMatch = relRegex.exec(coverRelsXml)) !== null) {
+      const attrs = relMatch[1];
+      const id     = (attrs.match(/Id="([^"]+)"/)     || [])[1];
+      const type   = (attrs.match(/Type="([^"]+)"/)   || [])[1];
+      const target = (attrs.match(/Target="([^"]+)"/) || [])[1];
+      const mode   = (attrs.match(/TargetMode="([^"]+)"/) || [])[1];
+      if (!id || !type || !target) continue;
+
+      if (SKIP_REL_TYPES.has(type)) {
+        droppedRids.add(id);
+        continue;
+      }
+
+      const newId = 'rId' + (++maxRid);
+      ridMap.set(id, newId);
+
+      let newTarget = target;
+      // Rename media on collision
+      if (/^media\//i.test(target) || target.startsWith('media/')) {
+        const filename = target.replace(/^media\//i, '');
+        const newName = uniqueMediaName(filename, out);
+        if (newName !== filename) mediaRename.set(filename, newName);
+        newTarget = 'media/' + newName;
+      }
+
+      newRels.push({ id: newId, type, target: newTarget, mode });
+    }
+
+    // Copy cover media into output (renamed where necessary) and collect file extensions
+    const mediaExts = new Set();
+    for (const path of Object.keys(coverZip.files)) {
+      if (!/^word\/media\//i.test(path)) continue;
+      if (coverZip.files[path].dir) continue;
+      const filename = path.replace(/^word\/media\//i, '');
+      const targetName = mediaRename.get(filename) || filename;
+      const outPath = 'word/media/' + targetName;
+      const extMatch = targetName.match(/\.([^.]+)$/);
+      if (extMatch) mediaExts.add(extMatch[1].toLowerCase());
+      if (out.file(outPath)) continue; // identical filename already there (shouldn't happen due to rename)
+      const buf = await coverZip.files[path].async('uint8array');
+      out.file(outPath, buf);
+    }
+
+    // Make sure [Content_Types].xml has Default entries for any image extensions we added.
+    await ensureContentTypeDefaults(out, mediaExts);
+
+    // Build new document.xml.rels
+    let newRelsXml = mainRelsXml.replace(/<\/Relationships>\s*$/, '');
+    for (const r of newRels) {
+      let attrs = 'Id="' + r.id + '" Type="' + r.type + '" Target="' + escapeAttr(r.target) + '"';
+      if (r.mode) attrs += ' TargetMode="' + r.mode + '"';
+      newRelsXml += '<Relationship ' + attrs + '/>';
+    }
+    newRelsXml += '</Relationships>';
+    out.file('word/_rels/document.xml.rels', newRelsXml);
+
+    // Rewrite cover document.xml: rId remapping + strip references to dropped rels
+    let processedCoverXml = coverDocXml;
+    // Remap rId references in attributes commonly used in OOXML
+    processedCoverXml = remapRids(processedCoverXml, ridMap);
+    // Strip elements that reference dropped rIds (e.g., headerReference, footerReference)
+    processedCoverXml = stripDroppedRefs(processedCoverXml, droppedRids);
+
+    // Extract cover body innards
+    const coverBodyMatch = processedCoverXml.match(/<w:body[^>]*>([\s\S]*?)<\/w:body>/);
+    if (!coverBodyMatch) throw new Error('Could not parse cover sheet structure.');
+    let coverBody = coverBodyMatch[1];
+
+    // Pull out cover's terminal sectPr (the one right before </w:body>, not inside any pPr)
+    // It will become the section properties of the first (cover) section.
+    let coverSectPr = '';
+    const terminalSectPrMatch = coverBody.match(/<w:sectPr\b[^>]*(?:\/>|>[\s\S]*?<\/w:sectPr>)\s*$/);
+    if (terminalSectPrMatch) {
+      coverSectPr = terminalSectPrMatch[0].trim();
+      coverBody = coverBody.substring(0, terminalSectPrMatch.index).trimEnd();
+    }
+    // Ensure cover sectPr defines a Next Page break (so main starts on a new page).
+    coverSectPr = ensureNextPage(coverSectPr);
+
+    // Build a paragraph that holds the cover's sectPr — this marks the end of section 1.
+    const sectionBreakPara =
+      '<w:p><w:pPr>' + coverSectPr + '</w:pPr></w:p>';
+
+    // Splice into main doc body: cover body + section break paragraph + main body (existing)
+    const bodyOpenMatch = mainDocXml.match(/<w:body[^>]*>/);
+    if (!bodyOpenMatch) throw new Error('Could not parse main document structure.');
+    const insertAt = bodyOpenMatch.index + bodyOpenMatch[0].length;
+    const newDocXml =
+      mainDocXml.substring(0, insertAt) +
+      coverBody +
+      sectionBreakPara +
+      mainDocXml.substring(insertAt);
+
+    out.file('word/document.xml', newDocXml);
+
+    return await out.generateAsync({
+      type: 'blob',
+      mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      compression: 'DEFLATE'
+    });
+  }
+
+  // --- helpers --------------------------------------------------------------
+
+  async function readOrDefault(zip, path, fallback) {
+    const f = zip.file(path);
+    if (!f) return fallback;
+    return await f.async('string');
+  }
+
+  function escapeAttr(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  }
+
+  function uniqueMediaName(filename, outZip) {
+    if (!outZip.file('word/media/' + filename)) return filename;
+    const dot = filename.lastIndexOf('.');
+    const base = dot >= 0 ? filename.substring(0, dot) : filename;
+    const ext  = dot >= 0 ? filename.substring(dot) : '';
+    let i = 1;
+    let candidate;
+    do {
+      candidate = base + '_cover' + i + ext;
+      i++;
+    } while (outZip.file('word/media/' + candidate));
+    return candidate;
+  }
+
+  /**
+   * Replace rId references in OOXML attribute positions where they typically appear:
+   *   r:id, r:embed, r:link, r:pict, r:dataPic, r:href, r:cs, w:id (for some constructs we won't touch).
+   * Uses an exact match in quoted attribute values to avoid partial replacements (e.g., rId1 vs rId10).
+   */
+  function remapRids(xml, ridMap) {
+    if (ridMap.size === 0) return xml;
+    return xml.replace(
+      /(r:(?:id|embed|link|pict|dataPic|href|cs)|relationships:id)="([^"]+)"/g,
+      (match, attr, val) => {
+        if (ridMap.has(val)) return attr + '="' + ridMap.get(val) + '"';
+        return match;
+      }
+    );
+  }
+
+  /**
+   * Remove any reference element (headerReference / footerReference / etc.)
+   * that points at an rId we dropped from the relationships file.
+   */
+  function stripDroppedRefs(xml, droppedRids) {
+    if (droppedRids.size === 0) return xml;
+    // Match self-closing reference elements like <w:headerReference w:type="default" r:id="rId7"/>
+    return xml.replace(
+      /<w:(?:headerReference|footerReference|footnoteReference|endnoteReference)\b[^>]*?r:id="([^"]+)"[^>]*?\/>/g,
+      (match, rid) => droppedRids.has(rid) ? '' : match
+    );
+  }
+
+  /**
+   * Make sure [Content_Types].xml has a <Default> entry for every image extension we
+   * brought over from the cover sheet. Without this, Word silently drops the image.
+   */
+  async function ensureContentTypeDefaults(zip, extensions) {
+    if (!extensions || extensions.size === 0) return;
+    const ctFile = zip.file('[Content_Types].xml');
+    if (!ctFile) return;
+    let xml = await ctFile.async('string');
+    const mimeMap = {
+      png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif',
+      bmp: 'image/bmp', tif: 'image/tiff', tiff: 'image/tiff', svg: 'image/svg+xml',
+      webp: 'image/webp', emf: 'image/x-emf', wmf: 'image/x-wmf', ico: 'image/x-icon'
+    };
+    let mutated = false;
+    for (const ext of extensions) {
+      const hasEntry = new RegExp(
+        '<Default\\b[^>]*Extension="' + ext + '"', 'i'
+      ).test(xml);
+      if (hasEntry) continue;
+      const mime = mimeMap[ext] || 'application/octet-stream';
+      const tag = '<Default Extension="' + ext + '" ContentType="' + mime + '"/>';
+      // Insert before the first <Override> if present, else before </Types>
+      if (/<Override\b/.test(xml)) {
+        xml = xml.replace(/<Override\b/, tag + '<Override');
+      } else {
+        xml = xml.replace(/<\/Types>\s*$/, tag + '</Types>');
+      }
+      mutated = true;
+    }
+    if (mutated) zip.file('[Content_Types].xml', xml);
+  }
+
+  /**
+   * Make sure the section properties include <w:type w:val="nextPage"/> so the main
+   * document begins on a new page after the cover sheet.
+   */
+  function ensureNextPage(sectPrXml) {
+    if (!sectPrXml) {
+      return '<w:sectPr><w:type w:val="nextPage"/></w:sectPr>';
+    }
+    if (/<w:type\b/.test(sectPrXml)) {
+      // Force value to nextPage
+      return sectPrXml.replace(/<w:type\b[^/>]*\/>/, '<w:type w:val="nextPage"/>');
+    }
+    // Insert a type element right after the opening tag
+    return sectPrXml.replace(/<w:sectPr\b([^>]*)>/, '<w:sectPr$1><w:type w:val="nextPage"/>');
+  }
+})();
+</script>
+</body>
+</html>
